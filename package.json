@@ -1,8 +1,6 @@
 {
   "name": "astroroast",
   "version": "1.0.0",
-  "description": "AI Roast App",
-  "main": "index.html",
   "dependencies": {
     "@google/generative-ai": "^0.21.0"
   }
