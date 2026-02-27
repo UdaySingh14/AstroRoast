@@ -1,35 +1,30 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async (event) => {
-    // Handle CORS preflight
-    if (event.httpMethod === "OPTIONS") {
-        return {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "Content-Type",
-                "Access-Control-Allow-Methods": "POST, OPTIONS"
-            },
-            body: "OK"
-        };
-    }
+    // 1. Setup CORS so your website can talk to the function
+    const headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS"
+    };
 
-    if (event.httpMethod !== "POST") {
-        return { statusCode: 405, body: "Method Not Allowed" };
+    if (event.httpMethod === "OPTIONS") {
+        return { statusCode: 200, headers, body: "OK" };
     }
 
     try {
         const { name, dob, pob } = JSON.parse(event.body);
         
-        // Initialize with your Environment Variable
+        // 2. Initialize with your Key
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        // Use "gemini-1.5-flash-latest" for the most stable endpoint
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        // 3. FIX: Use the stable model name without the "-latest" suffix
+        // This is the most compatible name across all API versions
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const prompt = `Act as a savage, Gen-Z astrologer. Roast this person brutally based on their birth info: 
+        const prompt = `You are a savage Gen-Z astrologer. Roast this person brutally. 
         Name: ${name}, Born: ${pob} on ${dob}. 
-        Keep it under 3 sentences. Use slang like 'mid', 'delulu', 'cooked', and 'ratioed'.`;
+        Use slang like 'cooked', 'L', 'mid'. Max 3 sentences.`;
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
@@ -37,17 +32,14 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
-            headers: { 
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*" 
-            },
+            headers,
             body: JSON.stringify({ roast: text })
         };
     } catch (error) {
-        console.error("Gemini Error:", error.message);
+        console.error("DEBUG:", error);
         return {
             statusCode: 500,
-            headers: { "Access-Control-Allow-Origin": "*" },
+            headers,
             body: JSON.stringify({ error: "The stars are blocked: " + error.message })
         };
     }
