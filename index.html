@@ -186,9 +186,15 @@
                 const data = await response.json();
 
                 // Success Transition
-                elements.loading.style.display = 'none';
-                elements.result.style.display = 'block';
-                elements.text.innerText = data.roast;
+              const data = await response.json();
+
+if (data.roast) {
+    elements.loading.style.display = 'none';
+    elements.result.style.display = 'block';
+    elements.text.innerText = data.roast;
+} else if (data.error) {
+    throw new Error(data.error);
+}
 
             } catch (error) {
                 console.error("Dev Log Error:", error);
